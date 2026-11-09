@@ -3,3 +3,6 @@ node_modules
 .env
 
 /src/generated/prisma
+
+# Rapport de couverture généré par les tests
+coverage/
