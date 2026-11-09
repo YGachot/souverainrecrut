@@ -6,3 +6,6 @@ node_modules
 
 # Rapport de couverture généré par les tests
 coverage/
+
+# Fichiers de travail du scanner SonarQube
+.scannerwork/
