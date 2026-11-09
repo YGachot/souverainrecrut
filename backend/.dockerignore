@@ -1,0 +1,22 @@
+# Fichiers exclus de l'image Docker (inutiles ou sensibles)
+
+# Secrets / configuration locale
+.env
+.env.*
+
+# Dépendances et builds locaux (reconstruits dans l'image)
+node_modules
+dist
+
+# Tests, couverture et analyse qualité
+tests
+coverage
+.scannerwork
+jest.config.js
+tsconfig.test.json
+sonar-project.properties
+
+# Fichiers Docker / Git
+Dockerfile
+.dockerignore
+.gitignore
