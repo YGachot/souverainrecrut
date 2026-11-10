@@ -112,6 +112,7 @@ Dossier `docs/captures/`. Les captures `term-*` reproduisent des sorties de comm
 | §3.4 Jenkins | `jenkins-credentials.png`, `jenkins-sonar-server.png` |
 | §3.5 Pipeline Jenkins | `jenkins-build-stages.png`, `term-jenkins-console.png`, `term-gitlog.png` |
 | §3.6 Trivy et Docker Hub | `term-trivy-avant.png`, `term-trivy-inter.png`, `term-trivy-apres.png`, `dockerhub-tags.png` |
+| §4.1 Serveur VMware | `vmware-vm.png` |
 | §4.2 Terraform | `term-terraform.png` |
 | §4.3 Ansible | `term-ansible-inventaire.png`, `term-ansible-playbook.png`, `term-ansible-verification.png` |
 | §4.4 GitLab | `gitlab-runner-online.png`, `term-gitlab-runner.png`, `gitlab-variables.png`, `gitlab-pipeline.png`, `gitlab-jobs.png`, `gitlab-job-log.png` |
