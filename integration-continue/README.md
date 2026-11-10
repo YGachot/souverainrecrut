@@ -53,7 +53,7 @@ Dans Jenkins :
 2. *Manage Jenkins > System > SonarQube servers* : nom `sonarqube`, URL `http://host.docker.internal:9000`, token `sonarqube-token`.
 3. Job Pipeline `souverainrecrut-backend` : *Pipeline script from SCM*, dépôt GitHub, branche `Dev`, script `Jenkinsfile`.
 
-Dans SonarQube : projet `souverainrecrut-backend` et Quality Gate « SouverainRecrut » (couverture ≥ 80 %, duplication ≤ 3 %, note de sécurité au moins D), appliqué au projet.
+Dans SonarQube : projet `souverainrecrut-backend` et Quality Gate « SouverainRecrut » appliqué au projet : couverture ≥ 80 % et duplication ≤ 3 %, sur tout le code et sur le code neuf, plus une note de sécurité au moins égale à D.
 
 Le Quality Gate est attendu par le scanner (`sonar.qualitygate.wait=true`) plutôt que par un webhook : SonarQube 26 refuse d'envoyer des webhooks vers des adresses privées, comme `host.docker.internal`.
 

@@ -21,7 +21,7 @@ Le Frontend est hors périmètre.
 |---|---|---|
 | 3.1 | Fork, clone, branche `Dev`, `npm ci`, `prisma generate` | dépôt prêt |
 | 3.2 | Jest + ts-jest + Supertest, Prisma simulé (`jest-mock-extended`) : 5 suites (authentification, candidats, offres, candidatures, contrôle des accès) | **59/59 tests**, couverture des lignes 87,62 %, `coverage/lcov.info` |
-| 3.3 | SonarQube Community 26.11, projet `souverainrecrut-backend`, Quality Gate « SouverainRecrut » | **PASSED** : couverture 82,5 %, duplication 0 %, sécurité B, 0 bug |
+| 3.3 | SonarQube Community 26.11, projet `souverainrecrut-backend`, Quality Gate « SouverainRecrut » | **PASSED** : couverture 82,5 %, duplication 0 %, sécurité B, 0 security hotspot |
 | 3.4 | Jenkins en conteneur (plugins Git, Pipeline, SonarQube, Credentials Binding), credentials `sonarqube-token` et `dockerhub` | aucun secret dans le dépôt |
 | 3.5 | `Jenkinsfile` en 8 étapes, chaque contrôle étant bloquant | build #2 **SUCCESS** |
 | 3.6 | Dockerfile multi-stage figé (Node 22.23.4 Alpine), `.dockerignore`, tag `version-commit`, Trivy avec seuil 0 CRITICAL | `yanisght/souverainrecrut-backend:1.0.0-4670db8` publiée |
@@ -106,9 +106,11 @@ Dossier `docs/captures/`. Les captures `term-*` reproduisent des sorties de comm
 
 | Étape | Captures |
 |---|---|
+| Architecture | `schema-architecture.png` |
 | §3.2 Tests et couverture | `term-tests.png`, `coverage-report.png` |
-| §3.3 SonarQube | `sonar-qualitygate.png` |
-| §3.5 Pipeline Jenkins | `term-jenkins-console.png`, `term-gitlog.png` |
+| §3.3 SonarQube | `sonar-qualitygate.png`, `sonar-overview.png`, `sonar-issues.png` |
+| §3.4 Jenkins | `jenkins-credentials.png`, `jenkins-sonar-server.png` |
+| §3.5 Pipeline Jenkins | `jenkins-build-stages.png`, `term-jenkins-console.png`, `term-gitlog.png` |
 | §3.6 Trivy et Docker Hub | `term-trivy-avant.png`, `term-trivy-inter.png`, `term-trivy-apres.png`, `dockerhub-tags.png` |
 | §4.2 Terraform | `term-terraform.png` |
 | §4.3 Ansible | `term-ansible-inventaire.png`, `term-ansible-playbook.png`, `term-ansible-verification.png` |

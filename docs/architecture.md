@@ -7,6 +7,10 @@ La chaîne est découpée en deux parties indépendantes, reliées par **une ima
 - **Intégration continue (Jenkins)** : le code de la branche `Dev` est testé, analysé, conteneurisé, scanné, puis publié sur Docker Hub.
 - **Déploiement continu (GitLab CI/CD)** : une image déjà publiée est récupérée et déployée sur le serveur Ubuntu, sans jamais être reconstruite.
 
+![Architecture de la chaîne CI/CD](captures/schema-architecture.png)
+
+Vue détaillée :
+
 ```mermaid
 flowchart LR
   subgraph CI["Intégration continue - poste de travail"]

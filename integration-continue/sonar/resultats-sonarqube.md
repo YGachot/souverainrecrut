@@ -7,11 +7,13 @@
 
 ## Quality Gate « SouverainRecrut »
 
-| Condition (sur l'ensemble du code) | Seuil d'échec | Valeur mesurée | Statut |
+| Condition | Seuil d'échec | Valeur mesurée | Statut |
 |---|---|---|---|
-| Couverture | < 80 % | **82,5 %** | OK |
-| Lignes dupliquées | > 3 % | **0,0 %** | OK |
-| Note de sécurité | pire que D | **B** | OK |
+| Couverture (tout le code) | < 80 % | **82,5 %** | OK |
+| Lignes dupliquées (tout le code) | > 3 % | **0,0 %** | OK |
+| Note de sécurité (tout le code) | pire que D | **B** | OK |
+| Couverture du code neuf | < 80 % | pas encore de code neuf | non évaluée |
+| Lignes dupliquées du code neuf | > 3 % | pas encore de code neuf | non évaluée |
 
 Le pipeline Jenkins attend le verdict (`sonar.qualitygate.wait=true`) : si le Quality Gate échoue, le build s'arrête avant la construction de l'image Docker.
 
@@ -24,20 +26,22 @@ Le pipeline Jenkins attend le verdict (`sonar.qualitygate.wait=true`) : si le Qu
 | Couverture des lignes | 86,1 % (70 lignes non couvertes sur 503) |
 | Couverture des branches | 56,5 % |
 | Duplications | 0,0 % |
-| Bugs | 0 (fiabilité A) |
-| Vulnérabilités | 1 (sécurité B) |
+| Sécurité | 1 problème, note **B** |
+| Fiabilité | 2 problèmes, note **C** |
+| Maintenabilité | 2 problèmes, note **A** |
 | Security hotspots | 0 |
-| Code smells | 2 (maintenabilité A) |
 
-## Problèmes ouverts
+SonarQube 26 classe les problèmes par qualité logicielle (mode MQR). Un même problème peut toucher plusieurs qualités : les 2 problèmes `parseInt` comptent à la fois en fiabilité et en maintenabilité. Il y a donc 3 problèmes ouverts au total.
 
-| Sévérité | Type | Règle | Emplacement | Message |
-|---|---|---|---|---|
-| Mineure | Vulnérabilité | typescript:S5689 | `src/app.ts:15` | Express annonce sa version par défaut (en-tête `X-Powered-By`) |
-| Mineure | Code smell | typescript:S7773 | `src/utils/pagination.ts:28` | Préférer `Number.parseInt` à `parseInt` |
-| Mineure | Code smell | typescript:S7773 | `src/utils/pagination.ts:31` | Préférer `Number.parseInt` à `parseInt` |
+## Problèmes ouverts (3)
 
-Ces trois points sont mineurs et ne bloquent pas le Quality Gate. Ils concernent le code applicatif fourni, hors du périmètre CI/CD du projet.
+| Qualité touchée (sévérité) | Règle | Emplacement | Message |
+|---|---|---|---|
+| Sécurité (Low) | typescript:S5689 | `src/app.ts:15` | Express annonce sa version par défaut (en-tête `X-Powered-By`) |
+| Fiabilité (Medium), Maintenabilité (Low) | typescript:S7773 | `src/utils/pagination.ts:28` | Préférer `Number.parseInt` à `parseInt` |
+| Fiabilité (Medium), Maintenabilité (Low) | typescript:S7773 | `src/utils/pagination.ts:31` | Préférer `Number.parseInt` à `parseInt` |
+
+Aucun de ces points ne bloque le Quality Gate, dont les conditions portent sur la couverture, la duplication et la sécurité. Ils concernent le code applicatif fourni, hors du périmètre CI/CD du projet.
 
 ## Exclusions configurées
 
