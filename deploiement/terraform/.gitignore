@@ -1,0 +1,6 @@
+# Terraform : fichiers locaux et état (jamais dans Git)
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log

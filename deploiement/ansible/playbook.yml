@@ -1,0 +1,83 @@
+# Préparation du serveur de déploiement (§4.3)
+# Inventaire généré par Terraform : deploiement/terraform -> inventory.ini
+#
+# Usage (depuis WSL) :
+#   ansible -i inventory.ini app -m ping
+#   ansible-playbook -i inventory.ini playbook.yml --ask-become-pass
+
+- name: Préparer le serveur SouverainRecrut
+  hosts: app
+  become: true
+
+  tasks:
+    # 1. Mettre à jour le système et installer les dépendances nécessaires
+    - name: Mettre à jour le cache APT et les paquets du système
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: dist
+        cache_valid_time: 3600
+
+    - name: Installer les dépendances nécessaires
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+        state: present
+
+    # 2. Installer Docker Engine et le plugin Docker Compose
+    - name: Installer Docker Engine et le plugin Docker Compose
+      ansible.builtin.apt:
+        name:
+          - docker.io
+          - docker-compose-v2
+        state: present
+
+    # 3. Activer et démarrer le service Docker
+    - name: Activer et démarrer le service Docker
+      ansible.builtin.systemd_service:
+        name: docker
+        enabled: true
+        state: started
+
+    # 4. Créer le répertoire de déploiement
+    - name: Créer le répertoire de déploiement
+      ansible.builtin.file:
+        path: "{{ deploy_dir }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0755"
+
+    # 4. Vérifier le fonctionnement des services
+    - name: Vérifier que le service Docker est actif
+      ansible.builtin.command: systemctl is-active docker
+      register: docker_service
+      changed_when: false
+
+    - name: Vérifier Docker Engine
+      ansible.builtin.command: docker version --format "{{ '{{' }}.Server.Version{{ '}}' }}"
+      register: docker_engine
+      changed_when: false
+
+    - name: Vérifier le plugin Docker Compose
+      ansible.builtin.command: docker compose version --short
+      register: docker_compose
+      changed_when: false
+
+    - name: Vérifier le répertoire de déploiement
+      ansible.builtin.stat:
+        path: "{{ deploy_dir }}"
+      register: deploy_dir_stat
+
+    - name: Contrôler l'état du serveur
+      ansible.builtin.assert:
+        that:
+          - docker_service.stdout == "active"
+          - docker_engine.stdout | length > 0
+          - docker_compose.stdout | length > 0
+          - deploy_dir_stat.stat.isdir
+        success_msg: >-
+          Serveur prêt : service Docker {{ docker_service.stdout }},
+          Docker Engine {{ docker_engine.stdout }},
+          Docker Compose {{ docker_compose.stdout }},
+          répertoire {{ deploy_dir }} présent.

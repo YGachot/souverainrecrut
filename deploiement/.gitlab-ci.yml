@@ -1,0 +1,41 @@
+# Pipeline de déploiement SouverainRecrut (GitLab CI/CD)
+#
+# §4.4 - Préparation : contrôle des variables CI/CD et de l'accès SSH au serveur.
+#
+# Variables CI/CD (Settings > CI/CD > Variables) - aucune valeur dans le dépôt :
+#   DOCKERHUB_USERNAME    compte Docker Hub
+#   DOCKERHUB_TOKEN       token d'accès Docker Hub            (Masked and hidden, Protected)
+#   SERVER_HOST           adresse du serveur de déploiement
+#   SSH_USER              utilisateur SSH sur le serveur
+#   SSH_PRIVATE_KEY_B64   clé privée de déploiement en base64 (Masked and hidden, Protected)
+#   SSH_KNOWN_HOSTS       clé d'hôte du serveur (vérification de son identité)
+#   IMAGE_TAG             tag de l'image Backend à déployer
+#
+# Le serveur (VM VMware en NAT) n'est pas joignable depuis les runners de
+# gitlab.com : les jobs s'exécutent sur un runner local (tag "souverainrecrut").
+
+stages:
+  - preparation
+
+verifier-configuration:
+  stage: preparation
+  image: alpine:3.24.4
+  tags:
+    - souverainrecrut
+  before_script:
+    - apk add --no-cache openssh-client
+  script:
+    # Présence des variables (seul le nom est affiché, jamais la valeur)
+    - |
+      for v in DOCKERHUB_USERNAME DOCKERHUB_TOKEN SERVER_HOST SSH_USER SSH_PRIVATE_KEY_B64 SSH_KNOWN_HOSTS IMAGE_TAG; do
+        eval "val=\${$v:-}"
+        if [ -z "$val" ]; then echo "Variable manquante : $v"; exit 1; fi
+        echo "Variable $v : définie"
+      done
+    # Clé de déploiement et clé d'hôte, uniquement dans le conteneur du job
+    - install -d -m 700 ~/.ssh
+    - echo "$SSH_PRIVATE_KEY_B64" | base64 -d > ~/.ssh/id_deploy
+    - chmod 600 ~/.ssh/id_deploy
+    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+    # Accès SSH au serveur préparé par Ansible (§4.3)
+    - ssh -i ~/.ssh/id_deploy -o BatchMode=yes "$SSH_USER@$SERVER_HOST" 'hostname; docker --version; docker compose version; ls -ld /opt/souverainrecrut'
