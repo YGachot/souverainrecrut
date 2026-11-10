@@ -1,0 +1,2 @@
+# Configuration réelle du déploiement (secrets) : jamais dans Git
+.env
