@@ -1,0 +1,170 @@
+# Jenkins - build #2 (commit 4670db8) - stage Tests
++ npm run test:coverage
+
+> souverainrecrut-backend@1.0.0 test:coverage
+> jest --coverage
+
+GET /v1/candidates?page=2&limit=5 200 13.170 ms - 440
+GET /v1/jobs 200 10.818 ms - 370
+GET /v1/applications 200 12.188 ms - 236
+GET /v1/candidates 401 6.027 ms - 78
+POST /v1/auth/login 200 13.958 ms - 431
+GET /v1/jobs/job-1 200 3.955 ms - 308
+GET /v1/candidates 200 2.466 ms - 86
+GET /v1/applications/app-1 200 2.760 ms - 174
+GET /v1/candidates/cand-1 401 1.887 ms - 78
+POST /v1/auth/login 401 4.074 ms - 84
+GET /v1/jobs/inconnue 404 3.159 ms - 71
+GET /v1/candidates/cand-1 200 3.025 ms - 207
+POST /v1/candidates 401 0.958 ms - 78
+GET /v1/applications/inconnue 404 2.610 ms - 77
+PUT /v1/candidates/cand-1 401 1.422 ms - 78
+GET /v1/candidates/inconnu 404 1.992 ms - 74
+POST /v1/auth/login 401 3.539 ms - 84
+DELETE /v1/candidates/cand-1 401 1.459 ms - 78
+GET /v1/auth/me 401 1.566 ms - 78
+GET /v1/jobs 401 1.538 ms - 78
+POST /v1/jobs 201 5.756 ms - 308
+POST /v1/jobs 401 1.032 ms - 78
+GET /v1/auth/me 401 1.050 ms - 68
+DELETE /v1/jobs/job-1 401 1.077 ms - 78
+POST /v1/applications 201 4.827 ms - 174
+GET /v1/auth/me 401 1.279 ms - 68
+POST /v1/candidates 201 5.217 ms - 207
+GET /v1/applications 401 1.598 ms - 78
+POST /v1/jobs 400 3.205 ms - 427
+GET /v1/auth/me 401 2.483 ms - 79
+POST /v1/applications 401 0.904 ms - 78
+POST /v1/applications 400 3.359 ms - 232
+DELETE /v1/applications/app-1 401 1.149 ms - 78
+POST /v1/candidates 409 6.750 ms - 94
+GET /v1/auth/me 401 1.506 ms - 79
+DELETE /v1/candidates/cand-1 403 3.886 ms - 95
+PUT /v1/jobs/job-1 200 4.606 ms - 307
+DELETE /v1/jobs/job-1 403 1.735 ms - 95
+POST /v1/applications 400 2.289 ms - 200
+DELETE /v1/applications/app-1 403 2.627 ms - 95
+GET /v1/auth/me 200 3.318 ms - 226
+PUT /v1/jobs/inconnue 404 2.101 ms - 71
+POST /v1/candidates 400 2.845 ms - 298
+DELETE /v1/candidates/cand-1 200 3.209 ms - 207
+PUT /v1/applications/app-1 200 2.976 ms - 175
+GET /v1/auth/me 404 1.429 ms - 77
+PASS tests/integration/auth.test.ts (11.86 s)
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+PASS tests/integration/jobs.test.ts (11.835 s)
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+DELETE /v1/jobs/job-1 200 2.148 ms - 308
+PUT /v1/candidates/cand-1 200 3.626 ms - 206
+DELETE /v1/jobs/inconnue 404 2.356 ms - 71
+PUT /v1/applications/app-1 200 1.582 ms - 175
+DELETE /v1/applications/app-1 200 2.554 ms - 174
+PUT /v1/candidates/inconnu 404 3.733 ms - 74
+PUT /v1/applications/app-1 200 4.212 ms - 175
+PUT /v1/applications/app-1 400 1.285 ms - 200
+DELETE /v1/candidates/inconnu 404 2.145 ms - 74
+GET /v1/candidates 200 2.477 ms - 86
+PASS tests/integration/candidates.test.ts (11.9 s)
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+PASS tests/integration/access-control.test.ts (11.939 s)
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+PASS tests/integration/applications.test.ts (11.955 s)
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+PUT /v1/applications/inconnue 404 1.988 ms - 77
+GET /v1/candidates 403 1.800 ms - 95
+DELETE /v1/applications/inconnue 404 4.639 ms - 77
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   87.73 |    56.52 |   71.42 |   87.62 |                   
+ src               |      95 |      100 |       0 |      95 |                   
+  app.ts           |      95 |      100 |       0 |      95 | 34                
+ src/config        |     100 |    66.66 |     100 |     100 |                   
+  env.ts           |     100 |    66.66 |     100 |     100 | 8-14              
+ src/controllers   |    83.8 |        0 |   65.38 |    83.8 |                   
+  ...controller.ts |     100 |      100 |     100 |     100 |                   
+  ...controller.ts |     100 |      100 |     100 |     100 |                   
+  ...controller.ts |     100 |      100 |     100 |     100 |                   
+  ...controller.ts |      75 |      100 |       0 |      75 | 14-16             
+  ...controller.ts |   58.33 |        0 |       0 |   58.33 | 16-18,32-37       
+  ...controller.ts |      75 |      100 |       0 |      75 | 16-18             
+  ...controller.ts |     100 |      100 |     100 |     100 |                   
+  ...controller.ts |      44 |      100 |       0 |      44 | ...63,75-82,94-98 
+ src/errors        |     100 |        0 |     100 |     100 |                   
+  app.error.ts     |     100 |        0 |     100 |     100 | 9                 
+ src/middlewares   |    92.3 |    81.25 |    87.5 |   91.83 |                   
+  ...middleware.ts |     100 |      100 |     100 |     100 |                   
+  ...middleware.ts |   88.88 |       75 |     100 |   88.88 | 10                
+  ...middleware.ts |     100 |      100 |     100 |     100 |                   
+  ...middleware.ts |      75 |       50 |     100 |   71.42 | 23-25             
+  ...middleware.ts |     100 |       50 |     100 |     100 | 10                
+  ...middleware.ts |   66.66 |      100 |       0 |      50 | 11                
+  ...middleware.ts |     100 |      100 |     100 |     100 |                   
+ src/repositories  |   78.04 |        0 |      72 |   78.04 |                   
+  ...repository.ts |   88.88 |        0 |   83.33 |   88.88 | 92                
+  ...repository.ts |     100 |        0 |     100 |     100 | 9                 
+  ...repository.ts |      60 |      100 |       0 |      60 | 13-25             
+  ...repository.ts |     100 |        0 |     100 |     100 | 9                 
+  ...repository.ts |      40 |        0 |   28.57 |      40 | 10-32,75-99       
+ src/routes        |     100 |      100 |     100 |     100 |                   
+  ...ion.routes.ts |     100 |      100 |     100 |     100 |                   
+  auth.routes.ts   |     100 |      100 |     100 |     100 |                   
+  ...ate.routes.ts |     100 |      100 |     100 |     100 |                   
+  ...ard.routes.ts |     100 |      100 |     100 |     100 |                   
+  health.routes.ts |     100 |      100 |     100 |     100 |                   
+  index.ts         |     100 |      100 |     100 |     100 |                   
+  info.routes.ts   |     100 |      100 |     100 |     100 |                   
+  job.routes.ts    |     100 |      100 |     100 |     100 |                   
+  user.routes.ts   |     100 |      100 |     100 |     100 |                   
+ src/services      |      77 |    53.84 |   68.75 |      77 |                   
+  ...on.service.ts |    87.5 |       50 |   85.71 |    87.5 | 62-64             
+  auth.service.ts  |     100 |      100 |     100 |     100 |                   
+  ...te.service.ts |     100 |    66.66 |     100 |     100 | 16                
+  ...rd.service.ts |      75 |      100 |      50 |      75 | 11                
+  ...th.service.ts |   28.57 |      100 |       0 |   28.57 | 8-29              
+  info.service.ts  |   66.66 |      100 |       0 |   66.66 | 8                 
+  job.service.ts   |     100 |       50 |     100 |     100 | 16                
+  user.service.ts  |   39.13 |       25 |   28.57 |   39.13 | 18-31,51-91       
+ src/utils         |     100 |      100 |     100 |     100 |                   
+  async-handler.ts |     100 |      100 |     100 |     100 |                   
+  pagination.ts    |     100 |      100 |     100 |     100 |                   
+ src/validators    |     100 |      100 |     100 |     100 |                   
+  ...ion.schema.ts |     100 |      100 |     100 |     100 |                   
+  ...ate.schema.ts |     100 |      100 |     100 |     100 |                   
+  job.schema.ts    |     100 |      100 |     100 |     100 |                   
+  user.schema.ts   |     100 |      100 |     100 |     100 |                   
+-------------------|---------|----------|---------|---------|-------------------
+
+Test Suites: 5 passed, 5 total
+Tests:       59 passed, 59 total
+Snapshots:   0 total
