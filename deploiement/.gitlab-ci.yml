@@ -1,41 +1,131 @@
-# Pipeline de déploiement SouverainRecrut (GitLab CI/CD)
+# Pipeline de déploiement SouverainRecrut (GitLab CI/CD) - §5.3
 #
-# §4.4 - Préparation : contrôle des variables CI/CD et de l'accès SSH au serveur.
+#   validation    variables présentes, tag d'image valide et publié sur Docker Hub
+#   deploiement   approbation manuelle, puis déploiement sur le serveur par SSH
+#   verification  état des conteneurs et disponibilité de l'API
+#
+# L'image n'est jamais reconstruite : le serveur récupère sur Docker Hub
+# l'image publiée par Jenkins.
 #
 # Variables CI/CD (Settings > CI/CD > Variables) - aucune valeur dans le dépôt :
 #   DOCKERHUB_USERNAME    compte Docker Hub
-#   DOCKERHUB_TOKEN       token d'accès Docker Hub            (Masked and hidden, Protected)
+#   DOCKERHUB_TOKEN       token Docker Hub en lecture seule      (Masked and hidden, Protected)
 #   SERVER_HOST           adresse du serveur de déploiement
 #   SSH_USER              utilisateur SSH sur le serveur
-#   SSH_PRIVATE_KEY_B64   clé privée de déploiement en base64 (Masked and hidden, Protected)
+#   SSH_PRIVATE_KEY_B64   clé privée de déploiement en base64    (Masked and hidden, Protected)
 #   SSH_KNOWN_HOSTS       clé d'hôte du serveur (vérification de son identité)
-#   IMAGE_TAG             tag de l'image Backend à déployer
+#   IMAGE_TAG             tag de l'image Backend à déployer (version-commit)
+#   POSTGRES_PASSWORD     mot de passe PostgreSQL                (Masked and hidden, Protected)
+#   JWT_SECRET            secret de signature des jetons JWT     (Masked and hidden, Protected)
+#
+# Déployer une autre version (ou revenir en arrière) : Build > Pipelines >
+# New pipeline, en renseignant la variable IMAGE_TAG avec le tag voulu.
 #
 # Le serveur (VM VMware en NAT) n'est pas joignable depuis les runners de
 # gitlab.com : les jobs s'exécutent sur un runner local (tag "souverainrecrut").
 
-stages:
-  - preparation
+variables:
+  IMAGE_NAME: souverainrecrut-backend
+  DEPLOY_DIR: /opt/souverainrecrut
+  POSTGRES_USER: souverainrecrut
+  POSTGRES_DB: souverainrecrut
+  FRONTEND_URL: http://localhost:5173
 
-verifier-configuration:
-  stage: preparation
+stages:
+  - validation
+  - deploiement
+  - verification
+
+default:
   image: alpine:3.24.4
   tags:
     - souverainrecrut
+
+# Connexion SSH au serveur (clé et clé d'hôte uniquement dans le conteneur du job)
+.ssh:
   before_script:
     - apk add --no-cache openssh-client
-  script:
-    # Présence des variables (seul le nom est affiché, jamais la valeur)
-    - |
-      for v in DOCKERHUB_USERNAME DOCKERHUB_TOKEN SERVER_HOST SSH_USER SSH_PRIVATE_KEY_B64 SSH_KNOWN_HOSTS IMAGE_TAG; do
-        eval "val=\${$v:-}"
-        if [ -z "$val" ]; then echo "Variable manquante : $v"; exit 1; fi
-        echo "Variable $v : définie"
-      done
-    # Clé de déploiement et clé d'hôte, uniquement dans le conteneur du job
     - install -d -m 700 ~/.ssh
     - echo "$SSH_PRIVATE_KEY_B64" | base64 -d > ~/.ssh/id_deploy
     - chmod 600 ~/.ssh/id_deploy
     - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-    # Accès SSH au serveur préparé par Ansible (§4.3)
-    - ssh -i ~/.ssh/id_deploy -o BatchMode=yes "$SSH_USER@$SERVER_HOST" 'hostname; docker --version; docker compose version; ls -ld /opt/souverainrecrut'
+    - remote() { ssh -i ~/.ssh/id_deploy -o BatchMode=yes "$SSH_USER@$SERVER_HOST" "$@"; }
+
+valider-tag:
+  stage: validation
+  script:
+    # Présence des variables (seul le nom est affiché, jamais la valeur)
+    - |
+      for v in DOCKERHUB_USERNAME DOCKERHUB_TOKEN SERVER_HOST SSH_USER SSH_PRIVATE_KEY_B64 SSH_KNOWN_HOSTS IMAGE_TAG POSTGRES_PASSWORD JWT_SECRET; do
+        eval "val=\${$v:-}"
+        if [ -z "$val" ]; then echo "Variable manquante : $v"; exit 1; fi
+        echo "Variable $v : définie"
+      done
+    # Le mot de passe est repris dans DATABASE_URL : lettres et chiffres uniquement
+    - |
+      if ! echo "$POSTGRES_PASSWORD" | grep -Eq '^[A-Za-z0-9]+$'; then
+        echo "POSTGRES_PASSWORD doit contenir uniquement des lettres et des chiffres"; exit 1
+      fi
+    # Format du tag : version-commit (ex. 1.0.0-4670db8)
+    - |
+      if ! echo "$IMAGE_TAG" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+-[0-9a-f]{7,40}$'; then
+        echo "Tag invalide : $IMAGE_TAG (format attendu : version-commit, ex. 1.0.0-4670db8)"; exit 1
+      fi
+    # Le tag doit exister sur Docker Hub
+    - |
+      if ! wget -q -O /dev/null "https://hub.docker.com/v2/repositories/$DOCKERHUB_USERNAME/$IMAGE_NAME/tags/$IMAGE_TAG"; then
+        echo "Image introuvable sur Docker Hub : $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG"; exit 1
+      fi
+    - |
+      echo "Image à déployer : $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG"
+
+deployer-production:
+  stage: deploiement
+  extends: .ssh
+  # Approbation manuelle avant le déploiement en production
+  when: manual
+  allow_failure: false
+  environment:
+    name: production
+    url: http://$SERVER_HOST:4000/v1/health
+  script:
+    # Transmission du fichier de déploiement
+    - scp -i ~/.ssh/id_deploy -o BatchMode=yes deployment/docker-compose.yml "$SSH_USER@$SERVER_HOST:$DEPLOY_DIR/docker-compose.yml"
+    # Transmission de la configuration : .env écrit sur le serveur, lisible par l'utilisateur de déploiement seul
+    - |
+      printf '%s\n' \
+        "DOCKERHUB_USERNAME=$DOCKERHUB_USERNAME" \
+        "IMAGE_TAG=$IMAGE_TAG" \
+        "POSTGRES_USER=$POSTGRES_USER" \
+        "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" \
+        "POSTGRES_DB=$POSTGRES_DB" \
+        "JWT_SECRET=$JWT_SECRET" \
+        "FRONTEND_URL=$FRONTEND_URL" \
+        | remote "umask 077 && cat > $DEPLOY_DIR/.env"
+    # Récupération de l'image sur Docker Hub (token transmis par l'entrée standard, jamais en argument)
+    - echo "$DOCKERHUB_TOKEN" | remote "docker login -u $DOCKERHUB_USERNAME --password-stdin && cd $DEPLOY_DIR && docker compose pull; rc=\$?; docker logout; exit \$rc"
+    # Démarrage ou mise à jour des services (migrations Prisma puis API)
+    - remote "cd $DEPLOY_DIR && docker compose up -d --remove-orphans"
+
+verifier-deploiement:
+  stage: verification
+  extends: .ssh
+  script:
+    - remote "cd $DEPLOY_DIR && docker compose ps -a"
+    # Attente de l'état healthy du Backend (2 minutes maximum)
+    - |
+      for i in $(seq 1 24); do
+        state=$(remote "cd $DEPLOY_DIR && docker inspect -f '{{.State.Health.Status}}' \$(docker compose ps -q backend)")
+        echo "Backend : $state"
+        [ "$state" = "healthy" ] && break
+        sleep 5
+      done
+      [ "$state" = "healthy" ]
+    # Le conteneur exécute bien l'image demandée
+    - |
+      running=$(remote "cd $DEPLOY_DIR && docker inspect -f '{{.Config.Image}}' \$(docker compose ps -q backend)")
+      echo "Image en cours d'exécution : $running"
+      [ "$running" = "$DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG" ]
+    # Disponibilité de l'API depuis l'extérieur du serveur
+    - wget -q -O - "http://$SERVER_HOST:4000/v1/health"; echo
+    - wget -q -O - "http://$SERVER_HOST:4000/v1/ready"; echo

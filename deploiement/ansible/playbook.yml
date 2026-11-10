@@ -39,6 +39,16 @@
         enabled: true
         state: started
 
+    # Le pipeline GitLab déploie avec cet utilisateur SSH, sans sudo
+    - name: Autoriser l'utilisateur de déploiement à utiliser Docker
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+
+    - name: Prendre en compte le groupe docker dans la session SSH
+      ansible.builtin.meta: reset_connection
+
     # 4. Créer le répertoire de déploiement
     - name: Créer le répertoire de déploiement
       ansible.builtin.file:
@@ -48,14 +58,15 @@
         group: "{{ ansible_user }}"
         mode: "0755"
 
-    # 4. Vérifier le fonctionnement des services
+    # 5. Vérifier le fonctionnement des services
     - name: Vérifier que le service Docker est actif
       ansible.builtin.command: systemctl is-active docker
       register: docker_service
       changed_when: false
 
-    - name: Vérifier Docker Engine
+    - name: Vérifier Docker Engine (avec l'utilisateur de déploiement, sans sudo)
       ansible.builtin.command: docker version --format "{{ '{{' }}.Server.Version{{ '}}' }}"
+      become: false
       register: docker_engine
       changed_when: false
 
